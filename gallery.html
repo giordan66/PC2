@@ -1,0 +1,428 @@
+gallery.html <!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Netflix Movie Finder - Movie Gallery</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #550404;
+        background-color: #0a2929;
+      }
+
+      #mainheader {
+        background-color: #333;
+        color: #fff;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      #mainheader ul {
+        list-style-type: none;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+      }
+
+      #mainheader ul li {
+        margin: 0 1rem;
+      }
+
+      #mainheader ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+
+      #genreFilter {
+        padding: 0.5rem;
+        font-size: 1rem;
+        width: 200px;
+      }
+
+      main {
+        padding: 2rem;
+      }
+
+      #movie-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        justify-content: center;
+      }
+
+      .movie-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .movie-card:hover {
+        transform: scale(1.05);
+      }
+
+      .movie-card img {
+        width: 150px;
+        height: 225px;
+        object-fit: cover;
+        margin-bottom: 0.5rem;
+      }
+
+      .movie-card h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      .favorite-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        border-radius: 3px;
+      }
+
+      .favorite-btn:hover {
+        background-color: #0056b3;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 600px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      footer {
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        padding: 1rem;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
+
+      @media (max-width: 768px) {
+        #movie-grid {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="mainheader">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="gallery.html">Movie Gallery</a></li>
+      </ul>
+      <select id="genreFilter">
+        <option value="all">All Genres</option>
+      </select>
+    </header>
+    <main>
+      <div id="movie-grid"></div>
+    </main>
+    <div id="movieModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+    <footer>
+      <p>&copy; 2024 Netflix Movie Finder. Todos los derechos reservados.</p>
+    </footer>
+    <script>
+      const movieGrid = document.getElementById("movie-grid");
+      const genreFilter = document.getElementById("genreFilter");
+      const modal = document.getElementById("movieModal");
+      const modalContent = document.getElementById("modalContent");
+      const closeBtn = document.getElementsByClassName("close")[0];
+
+      const movies = [
+        {
+          title: "Bad Boys: Ride or Die ",
+          description:
+            "Los detectives Mike Lowrey y Marcus Burnett investigan la corrupción dentro de la policía de Miami cuando su difunto capitán Conrad Howard es acusado póstumamente de estar involucrado con la mafia mexicana!",
+          genre: "Accion",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/oGythE98MYleE6mZlGs5oBGkux1.jpg",
+        },
+        {
+          title: "Rebel Ridge",
+          description:
+            "Un ex marine se enfrenta a la corrupción en un pequeño pueblo cuando la policía local confisca injustamente la bolsa de dinero que necesita para pagar la fianza de su primo. ",
+          genre: "Accion",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/xEt2GSz9z5rSVpIHMiGdtf0czyf.jpg",
+        },
+        {
+          title: "Wanted Man ",
+          description:
+            "Sigue a un oficial de policía que debe recuperar a un testigo y escoltarla después de que un tiroteo de un cartel deja varios agentes de la DEA muertos, pero luego debe decidir en quién confiar cuando descubren que el ataque fue ejecutado por fuerzas estadounidenses.",
+          genre: "Accion",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/pmdgdb8biQLLzTjySZLPdK13KwM.jpg",
+        },
+        {
+          title: "Duchess",
+          description:
+            "Un duro delincuente de clase trabajadora se ve arrastrado al traicionero mundo del contrabando de diamantes y se transforma en una antiheroína a tener en cuenta en el turbio inframundo.",
+          genre: "Accion",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/5TR7JlJbKucNSq84rkbnjLd1JB5.jpg",
+        },
+        {
+          title: "Inside Out 2 ",
+          description:
+            "La sede mental del adolescente Riley está sufriendo una repentina demolición para dejar espacio a algo completamente inesperado: ¡nuevas emociones! La alegría, la tristeza, la ira, el miedo y el asco, que llevan mucho tiempo dirigiendo una operación exitosa en todos los sentidos, no están seguros de cómo sentirse cuando aparece la ansiedad. Y parece que no está sola..",
+          genre: "Animado",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg",
+        },
+        {
+          title: "Despicable Me 4  ",
+          description:
+            "Gru, Lucy y sus hijas (Margo, Edith y Agnes) dan la bienvenida a un nuevo miembro de la familia Gru, Gru Jr., que tiene la intención de atormentar a su padre. Gru también se enfrenta a un nuevo enemigo: Maxime Le Mal y su novia, la mujer fatal Valentina, lo que obliga a la familia a huir..",
+          genre: "Animado",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/wWba3TaojhK7NdycRhoQpsG0FaH.jpg",
+        },
+        {
+          title: "Transformers One  ",
+          description:
+            "La historia no contada del origen de Optimus Prime y Megatron, más conocidos como enemigos jurados, pero que alguna vez fueron amigos unidos como hermanos que cambiaron el destino de Cybertron para siempre.",
+          genre: "Animado",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/qbkAqmmEIZfrCO8ZQAuIuVMlWoV.jpg",
+        },
+        {
+          title: "Saving Bikini Bottom: The Sandy Cheeks Movie ",
+          description:
+            "Cuando Fondo de Bikini es rescatado del océano, la ardilla científica Sandy Cheeks y su amigo Bob Esponja se embarcan hacia Texas para salvar su ciudad.",
+          genre: "Animado",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/30YnfZdMNIV7noWLdvmcJS0cbnQ.jpg",
+        },
+        {
+          title: "Kung Fu Panda 4  ",
+          description:
+            "Po se está preparando para convertirse en el líder espiritual de su Valle de la Paz, pero también necesita a alguien que ocupe su lugar como Guerrero Dragón. Como tal, entrenará a un nuevo practicante de kung fu para el lugar y se encontrará con un villano llamado Camaleón que evoca villanos del pasado.",
+          genre: "Animado",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg",
+        },
+        {
+          title: "The Crow  ",
+          description:
+            "Las almas gemelas Eric y Shelly son brutalmente asesinadas cuando los demonios de su oscuro pasado los alcanzan. Ante la oportunidad de salvar a su verdadero amor sacrificándose, Eric se propone vengarse despiadadamente de sus asesinos, atravesando los mundos de los vivos y los muertos para arreglar las cosas equivocadas.",
+          genre: "Terror",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/58QT4cPJ2u2TqWZkterDq9q4yxQ.jpg",
+        },
+        {
+          title: "Afraid",
+          description:
+            "Curtis Pike y su familia son seleccionados para probar un nuevo dispositivo doméstico: un asistente digital llamado AIA. AIA observa los comportamientos de la familia y comienza a anticipar sus necesidades. Y ella puede (y lo hará) asegurarse de que nada (ni nadie) se interponga en el camino de su familia.",
+          genre: "Terror",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/gUREuXCnJLVHsvKXDH9fgIcfM6e.jpg",
+        },
+        {
+          title: "Alien: Romulus ",
+          description:
+            "Mientras hurgan en las profundidades de una estación espacial abandonada, un grupo de jóvenes colonizadores espaciales se encuentra cara a cara con la forma de vida más aterradora del universo.",
+          genre: "Terror",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg",
+        },
+        {
+          title: "Grave Torture  ",
+          description:
+            "Cuando un acto violento mata a sus padres, Sita promete desacreditar la idea del tormento sobrenatural después de la muerte, una fijación que la lleva a una búsqueda oscura.",
+          genre: "Terror",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/sDaiRx3OWvCOo1vLoEpdedLeVzY.jpg",
+        },
+        {
+          title: "The Well ",
+          description:
+            "Un joven restaurador viaja a un pequeño pueblo para restaurar una pintura medieval y devolverle su antiguo esplendor. Pondrá su vida en peligro debido a una maldición adherida al cuadro.",
+          genre: "Terror",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/zK1X5T7gAdXxLFhj0hYyCTVrvpU.jpg",
+        },
+        {
+          title: "God of Pain ",
+          description:
+            "Un hombre se despierta en plena calle sin saber dónde está ni cómo ha llegado allí. Pronto se ve obligado a enfrentarse a los demonios con los que está luchando antes de que una puerta de entrada al inframundo descubra el secreto de Algea, el Dios del Dolor.",
+          genre: "Terror",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/dF0FAFCfILaor5RBqdNHq24OaIn.jpg",
+        },
+        {
+          title: "It Ends with Us  ",
+          description:
+            "Cuando el primer amor de una mujer regresa repentinamente a su vida, su relación con un neurocirujano encantador pero abusivo cambia radicalmente, y ella se da cuenta de que debe aprender a confiar en su propia fuerza para tomar una decisión imposible para su futuro.",
+          genre: "Romance",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/cSMdFWmajaX4oUMLx7HEDI84GkP.jpg",
+        },
+        {
+          title: "Japanese Mom",
+          description:
+            "Sin embargo, comienza a engañarla con su ex novia en Corea. Min-cheol consoló a Yuki y pensó en ella como su nuera,",
+          genre: "Romance",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/hq1EaYIqUNrPM3QFYAbnH2UHoX8.jpg",
+        },
+        {
+          title: "My Fault ",
+          description:
+            "Noah debe dejar su ciudad, su novio y sus amigos para mudarse a la mansión de William Leister, el llamativo y rico marido de su madre Rafaela. ",
+          genre: "Romance",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/w46Vw536HwNnEzOa7J24YH9DPRS.jpg",
+        },
+        {
+          title: "I Don't Like Younger Men 5  ",
+          description:
+            "Ha-neul no ha visto a su amiga Ye-sol desde hace mucho tiempo, por lo que pasaron un buen rato juntas. Esa vez, el padre de Ye-sol, Min-soo, entra a la casa. ",
+          genre: "Romance",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/iyI4yY4bUtWS1demuvjfGj5Jclw.jpg",
+        },
+        {
+          title: "Titanic ",
+          description:
+            "Rose DeWitt Bukater, de 101 años, cuenta la historia de su vida a bordo del Titanic, 84 años después. Una joven Rose aborda el barco con su madre y su prometido.",
+          genre: "Romance",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg",
+        },
+        {
+          title: "Kill  ",
+          description:
+            "Cuando un comando del ejército descubre que su verdadero amor está comprometido en contra de su voluntad",
+          genre: "Accion",
+          image:
+            "https://media.themoviedb.org/t/p/w300_and_h450_bestv2/m2zXTuNPkywdYLyWlVyJZW2QOJH.jpg",
+        },
+      ];
+
+      function displayMovies(filter = "all") {
+        movieGrid.innerHTML = "";
+        movies.forEach((movie) => {
+          if (filter === "all" || movie.genre === filter) {
+            const movieCard = document.createElement("div");
+            movieCard.classList.add("movie-card");
+            movieCard.innerHTML = `
+              <img src="${movie.image}" alt="${movie.title}">
+              <h3>${movie.title}</h3>
+              <button class="favorite-btn">Favorite</button>
+            `;
+            movieCard
+              .querySelector(".favorite-btn")
+              .addEventListener("click", toggleFavorite);
+            movieCard.addEventListener("click", () => showMovieDetails(movie));
+            movieGrid.appendChild(movieCard);
+          }
+        });
+      }
+
+      function toggleFavorite(e) {
+        e.stopPropagation();
+        const button = e.target;
+        button.textContent =
+          button.textContent === "Favorite" ? "Favorited" : "Favorite";
+        button.style.backgroundColor =
+          button.textContent === "Favorited" ? "#dc3545" : "#007bff";
+      }
+
+      function showMovieDetails(movie) {
+        modalContent.innerHTML = `
+          <h2>${movie.title}</h2>
+          <img src="${movie.image}" alt="${movie.title}" style="width: 200px; height: 300px; object-fit: cover;">
+          <p>${movie.description}</p>
+          <p>Genre: ${movie.genre}</p>
+        `;
+        modal.style.display = "block";
+      }
+
+      closeBtn.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+
+      function populateGenreFilter() {
+        const genres = [...new Set(movies.map((movie) => movie.genre))];
+        genres.forEach((genre) => {
+          const option = document.createElement("option");
+          option.value = genre;
+          option.textContent = genre;
+          genreFilter.appendChild(option);
+        });
+      }
+
+      genreFilter.addEventListener("change", (e) => {
+        displayMovies(e.target.value);
+      });
+
+      populateGenreFilter();
+      displayMovies();
+    </script>
+     
+  </body>
+</html>
